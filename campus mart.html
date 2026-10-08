@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CampusMart – buy and sell inside your campus</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F5FA;--ink:#14213D;--mute:#5B6785;--line:#D9E0EE;--card:#fff;--accent:#2347E8;--ok:#13795B;--warn:#B76E00;--sold:#8A93A8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.4}
+body.lock{overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{font-size:16px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;background:var(--ink);color:#fff;font-weight:600}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.pri{background:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:980px;margin:0 auto;padding:0 14px}
+header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:5}
+header .wrap{display:flex;align-items:center;justify-content:space-between;padding-top:12px;padding-bottom:12px;gap:8px}
+.logo{font-weight:800;font-size:22px;letter-spacing:-.5px}
+.tag{font-size:12px;opacity:.75}
+header button{background:#fff;color:var(--ink);padding:8px 12px}
+.trust{background:#E4EAFB;font-size:13px;padding:8px 0;color:var(--ink)}
+.search{margin:14px 0 10px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.chip{white-space:nowrap;background:#fff;color:var(--ink);border:1px solid var(--line);padding:7px 14px;border-radius:99px}
+.chip[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.row{display:flex;gap:8px;margin:8px 0 14px}
+.sold-strip{font-size:13px;color:var(--mute);margin-bottom:12px;background:#fff;border:1px dashed var(--line);border-radius:10px;padding:8px 12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding-bottom:90px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+.card{background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--line);text-align:left;padding:0;color:var(--ink);display:block;width:100%}
+.card.is-sold{opacity:.55;filter:grayscale(1)}
+.ph{aspect-ratio:1;background:#E9EEF8;display:grid;place-items:center;font-size:44px;position:relative;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover}
+.badge{position:absolute;top:8px;left:8px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:#fff}
+.b-active{color:var(--ok)}.b-reserved{color:var(--warn)}.b-sold{color:var(--sold)}
+.cb{padding:10px 12px}
+.price{font-weight:800;font-size:18px}
+.neg{font-size:11px;font-weight:600;color:var(--accent);margin-left:6px}
+.t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m{font-size:12px;color:var(--mute)}
+.empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:40px 10px}
+.fab{position:fixed;right:16px;bottom:18px;background:var(--accent);padding:14px 20px;border-radius:99px;box-shadow:0 6px 18px rgba(35,71,232,.35);z-index:4}
+.ov{position:fixed;inset:0;background:rgba(20,33,61,.5);z-index:10;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:560px;max-height:94vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px;display:flex;flex-direction:column;gap:10px}
+@media(min-width:700px){.ov{align-items:center}.sheet{border-radius:18px}}
+.sheet h2{margin:0;font-size:20px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.big{aspect-ratio:4/3;border-radius:12px}
+label{font-size:13px;font-weight:600;display:block;margin-bottom:4px}
+.chatbox{display:flex;flex-direction:column;gap:8px;min-height:240px;max-height:46vh;overflow:auto;background:var(--bg);border-radius:12px;padding:10px}
+.msg{max-width:82%;padding:8px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);align-self:flex-start}
+.msg.me{align-self:flex-end;background:#DCE5FF;border-color:#C4D2FF}
+.msg.sys{align-self:center;background:none;border:0;font-size:12px;color:var(--mute)}
+.offer{border:2px solid var(--accent);background:#fff}
+.offer .price{font-size:20px}
+.acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.acts button{padding:6px 10px;font-size:13px}
+.sendrow{display:flex;gap:6px}
+.sendrow input{flex:1}
+.sendrow button{white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:14px}
+.li{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;width:100%;text-align:left;color:var(--ink)}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+@media(prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:0}}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div><div class="logo">CampusMart</div><div class="tag">Buy and sell within your campus</div></div><div id="top"></div></div></header>
+<div class="trust"><div class="wrap">Only students with a college email can chat or sell. Your phone number is never shown.</div></div>
+<main class="wrap">
+  <input class="search" id="q" type="search" placeholder="Search books, cycle, cooler..." aria-label="Search listings">
+  <div class="chips" id="chips" role="group" aria-label="Categories"></div>
+  <div class="row">
+    <select id="price" aria-label="Max price"><option value="0">Any price</option><option value="500">Up to ₹500</option><option value="2000">Up to ₹2,000</option><option value="5000">Up to ₹5,000</option></select>
+    <select id="sort" aria-label="Sort"><option value="new">Newest first</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select>
+  </div>
+  <div id="soldstrip"></div>
+  <div class="grid" id="grid" aria-live="polite"></div>
+</main>
+<button class="fab" data-act="sell">+ Sell an item</button>
+<div id="ov"></div>
+<div id="toast"></div>
+
+<script>
+const CATS=["Books","Electronics","Cycles","Furniture","Hostel","Others"];
+const ICON={Books:"📚",Electronics:"🔌",Cycles:"🚲",Furniture:"🪑",Hostel:"🛏️",Others:"📦"};
+const H=3600e3,D=24*H,now=Date.now();
+const SEED=[
+ {id:"l1",seller:"Arjun",hostel:"Block B, 4th year",title:"Hero Sprint cycle, 21 gears",price:2200,cat:"Cycles",cond:"Good",loc:"Block B gate",neg:true,desc:"Used two years. New tyres. Leaving campus this month.",status:"active",ts:now-2*H},
+ {id:"l2",seller:"Meera",hostel:"Girls Hostel 2, 3rd year",title:"Engineering Mathematics (Kreyszig)",price:350,cat:"Books",cond:"Like new",loc:"Library gate",neg:true,desc:"No markings. Edition 10.",status:"active",ts:now-5*H},
+ {id:"l3",seller:"Kiran",hostel:"Block A, 2nd year",title:"Table cooler, 40L",price:2500,cat:"Hostel",cond:"Good",loc:"Block A lobby",neg:false,desc:"Works fine. Pickup only.",status:"reserved",ts:now-D},
+ {id:"l4",seller:"Arjun",hostel:"Block B, 4th year",title:"Study table with shelf",price:900,cat:"Furniture",cond:"Fair",loc:"Block B gate",neg:true,desc:"Small scratch on top.",status:"active",ts:now-2*D},
+ {id:"l5",seller:"Meera",hostel:"Girls Hostel 2, 3rd year",title:"Scientific calculator fx-991EX",price:600,cat:"Electronics",cond:"Good",loc:"Canteen",neg:true,desc:"Original cover included.",status:"active",ts:now-3*D},
+ {id:"l6",seller:"Kiran",hostel:"Block A, 2nd year",title:"Electric kettle 1.5L",price:300,cat:"Hostel",cond:"Good",loc:"Block A lobby",neg:true,desc:"",status:"sold",soldPrice:250,ts:now-4*D}
+];
+let S;
+try{S=JSON.parse(localStorage.getItem("campusmart1"))}catch(x){}
+if(!S||!S.listings)S={user:null,listings:SEED,chats:[]};
+Object.assign(S,{q:"",cat:"All",view:null,counterTo:null});
+const save=()=>{try{localStorage.setItem("campusmart1",JSON.stringify({user:S.user,listings:S.listings,chats:S.chats}))}catch(x){}};
+const $=s=>document.querySelector(s);
+const e=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inr=n=>"₹"+Number(n).toLocaleString("en-IN");
+const ago=t=>{const h=Math.floor((Date.now()-t)/H);return h<1?"just now":h<24?h+"h ago":Math.floor(h/24)+"d ago"};
+const LBL={active:"Available",reserved:"Reserved",sold:"Sold"};
+const L=id=>S.listings.find(l=>l.id===id);
+function toast(m){const t=$("#toast");t.innerHTML='<div class="toast" role="status">'+e(m)+"</div>";setTimeout(()=>t.innerHTML="",2400)}
+
+function renderTop(){$("#top").innerHTML=S.user?`<button data-act="inbox">Chats · ${e(S.user.name)}</button>`:`<button data-act="login">Log in</button>`}
+function renderChips(){$("#chips").innerHTML=["All",...CATS].map(c=>`<button class="chip" data-act="cat" data-id="${c}" aria-pressed="${S.cat===c}">${c==="All"?"":ICON[c]+" "}${c}</button>`).join("")}
+function renderGrid(){
+  const max=+$("#price").value,sort=$("#sort").value,q=S.q.toLowerCase();
+  let a=S.listings.filter(l=>(S.cat==="All"||l.cat===S.cat)&&(!max||l.price<=max)&&(l.title+" "+l.desc+" "+l.cat).toLowerCase().includes(q));
+  a.sort((x,y)=>(x.status==="sold")-(y.status==="sold")||(sort==="low"?x.price-y.price:sort==="high"?y.price-x.price:y.ts-x.ts));
+  $("#grid").innerHTML=a.length?a.map(l=>`<button class="card ${l.status==="sold"?"is-sold":""}" data-act="detail" data-id="${l.id}">
+   <div class="ph">${l.photo?`<img src="${l.photo}" alt="">`:ICON[l.cat]}<span class="badge b-${l.status}">${LBL[l.status]}</span></div>
+   <div class="cb"><div class="price">${inr(l.status==="sold"&&l.soldPrice?l.soldPrice:l.price)}${l.neg&&l.status!=="sold"?'<span class="neg">Negotiable</span>':""}</div>
+   <div class="t">${e(l.title)}</div><div class="m t">${e(l.loc)} · ${ago(l.ts)}</div></div></button>`).join(""):`<div class="empty">No ${S.cat==="All"?"items":e(S.cat.toLowerCase())} match yet. Be the first to post one.</div>`;
+  const sold=S.listings.filter(l=>l.status==="sold"&&l.soldPrice);
+  $("#soldstrip").innerHTML=sold.length?`<div class="sold-strip"><b>Real prices:</b> ${sold.slice(0,3).map(l=>e(l.title)+" sold for "+inr(l.soldPrice)+" (asked "+inr(l.price)+")").join(" · ")}</div>`:"";
+}
+
+function overlay(inner){return `<div class="ov" data-act="close-bg"><div class="sheet" role="dialog" aria-modal="true">${inner}</div></div>`}
+function renderOverlay(){
+  const v=S.view,ov=$("#ov");document.body.classList.toggle("lock",!!v);
+  if(!v){ov.innerHTML="";return}
+  if(v.t==="login")ov.innerHTML=overlay(`<div class="top"><h2>Log in with your college email</h2><button class="ghost" data-act="close">Close</button></div>
+   <div><label for="n">Name</label><input id="n" placeholder="Your name"></div>
+   <div><label for="em">College email</label><input id="em" type="email" placeholder="you@college.edu.in"></div>
+   <div><label for="hs">Hostel and year</label><input id="hs" placeholder="Block B, 2nd year"></div>
+   <button class="pri" data-act="dologin">Continue</button>
+   <div class="m">Demo shortcuts, to test both sides of a deal:</div>
+   <div class="quick">${["Arjun","Meera","Kiran","Guest buyer"].map(n=>`<button class="ghost" data-act="quick" data-id="${n}">${n}</button>`).join("")}</div>`);
+  if(v.t==="sell")ov.innerHTML=overlay(`<div class="top"><h2>Sell an item</h2><button class="ghost" data-act="close">Close</button></div>
+   <div><label for="ti">Title</label><input id="ti" placeholder="e.g. Hero cycle, 21 gears"></div>
+   <div class="row" style="margin:0"><div style="flex:1"><label for="pr">Price (₹)</label><input id="pr" type="number" inputmode="numeric"></div>
+   <div style="flex:1"><label for="ca">Category</label><select id="ca">${CATS.map(c=>`<option>${c}</option>`).join("")}</select></div></div>
+   <div class="row" style="margin:0"><div style="flex:1"><label for="co">Condition</label><select id="co"><option>Like new</option><option selected>Good</option><option>Fair</option></select></div>
+   <div style="flex:1"><label for="lo">Pickup spot</label><input id="lo" placeholder="Library gate"></div></div>
+   <div><label for="de">Description</label><textarea id="de" rows="2"></textarea></div>
+   <div><label for="ph">Photo (optional)</label><input id="ph" type="file" accept="image/*"></div>
+   <label style="display:flex;gap:8px;align-items:center"><input id="ng" type="checkbox" checked style="width:auto"> Open to offers</label>
+   <button class="pri" data-act="post">Post listing</button>`);
+  if(v.t==="detail"){const l=L(v.id),mine=S.user&&S.user.name===l.seller;
+   ov.innerHTML=overlay(`<div class="top"><h2>${e(l.title)}</h2><button class="ghost" data-act="close">Close</button></div>
+   <div class="ph big">${l.photo?`<img src="${l.photo}" alt="">`:ICON[l.cat]}<span class="badge b-${l.status}">${LBL[l.status]}</span></div>
+   <div class="price">${inr(l.price)}${l.neg?'<span class="neg">Open to offers</span>':""}</div>
+   <div class="m">${e(l.cat)} · ${e(l.cond)} · Posted ${ago(l.ts)}</div>
+   <div>${e(l.desc)||"No description."}</div>
+   <div class="m">Seller: <b>${e(l.seller)}</b>, ${e(l.hostel)}<br>Meet at: ${e(l.loc)} (public spot, daytime)</div>
+   ${mine?`<div class="quick">${l.status!=="sold"?`<button class="pri" data-act="sold" data-id="${l.id}">Mark as sold</button>`:""}<button class="ghost" data-act="del" data-id="${l.id}">Delete listing</button></div>`
+   :l.status==="sold"?`<div class="m">This item is sold.</div>`:`<button class="pri" data-act="chat" data-id="${l.id}">Chat or make an offer</button>`}
+   <button class="ghost" data-act="report">Report this listing</button>`)}
+  if(v.t==="inbox"){const mine=S.chats.filter(c=>c.buyer===S.user.name||L(c.lid)?.seller===S.user.name);
+   ov.innerHTML=overlay(`<div class="top"><h2>Your chats</h2><button class="ghost" data-act="close">Close</button></div>
+   ${mine.map(c=>{const l=L(c.lid),last=c.msgs[c.msgs.length-1];return `<button class="li" data-act="openchat" data-id="${c.id}"><span><b>${e(l.title)}</b><br><span class="m">${e(c.buyer===S.user.name?l.seller:c.buyer)}: ${e(last?(last.type==="offer"?"Offer "+inr(last.price):last.text):"")}</span></span><span class="badge b-${l.status}" style="position:static">${LBL[l.status]}</span></button>`}).join("")||'<div class="empty">No chats yet. Open a listing and tap Chat.</div>'}
+   <button class="ghost" data-act="logout">Log out (${e(S.user.name)})</button>`)}
+  if(v.t==="chat"){const c=S.chats.find(x=>x.id===v.id),l=L(c.lid),seller=S.user.name===l.seller,other=seller?c.buyer:l.seller;
+   ov.innerHTML=overlay(`<div class="top"><div><h2>${e(l.title)}</h2><div class="m">Chatting with ${e(other)} · asking ${inr(l.price)} · ${LBL[l.status]}</div></div><button class="ghost" data-act="close">Close</button></div>
+   <div class="chatbox" id="cb">${c.msgs.map((m,i)=>msgHtml(m,i,c,l)).join("")||'<div class="msg sys">Say hello or send an offer. Your number stays hidden.</div>'}</div>
+   ${seller&&l.status==="reserved"?`<button class="pri" data-act="sold" data-id="${l.id}">Mark sold at ${inr(l.deal||l.price)}</button>`:""}
+   ${l.status==="sold"?'<div class="m">This item is sold.</div>':`
+   <div class="sendrow"><input id="tx" placeholder="Type a message" aria-label="Message"><button data-act="send">Send</button></div>
+   <div class="sendrow"><input id="of" type="number" inputmode="numeric" placeholder="${S.counterTo!=null?"Your counter price (₹)":"Your offer (₹)"}" aria-label="Offer price"><button class="pri" data-act="offer">${S.counterTo!=null?"Send counter":"Make offer"}</button></div>`}`);
+   const b=$("#cb");if(b)b.scrollTop=b.scrollHeight}
+}
+function msgHtml(m,i,c,l){
+  const me=m.from===S.user.name;
+  if(m.type==="sys")return `<div class="msg sys">${e(m.text)}</div>`;
+  if(m.type==="text")return `<div class="msg ${me?"me":""}">${e(m.text)}</div>`;
+  const pend=m.status==="pending"&&!me&&l.status!=="sold";
+  return `<div class="msg offer ${me?"me":""}"><div class="m">${me?"You offered":e(m.from)+" offered"}</div><div class="price">${inr(m.price)}</div><div class="m">${m.status==="pending"?"Waiting for reply":m.status}</div>
+  ${pend?`<div class="acts"><button class="pri" data-act="accept" data-id="${i}">Accept</button><button class="ghost" data-act="counter" data-id="${i}">Counter</button><button class="ghost" data-act="decline" data-id="${i}">Decline</button></div>`:""}</div>`}
+const curChat=()=>S.chats.find(x=>x.id===S.view.id);
+function push(m){const c=curChat();c.msgs.push({from:S.user.name,ts:Date.now(),...m});save();renderOverlay()}
+function openChat(lid){
+  if(!S.user){S.view={t:"login"};return renderOverlay()}
+  const l=L(lid);if(l.seller===S.user.name)return toast("This is your own listing.");
+  const id=lid+"_"+S.user.name;if(!S.chats.find(c=>c.id===id))S.chats.push({id,lid,buyer:S.user.name,msgs:[]});
+  S.view={t:"chat",id};renderOverlay()
+}
+function markSold(id){const l=L(id);l.status="sold";l.soldPrice=l.deal||l.price;save();S.view=null;renderOverlay();renderGrid();toast("Marked as sold for "+inr(l.soldPrice))}
+function login(name,hostel){S.user={name,hostel};save();S.view=null;renderTop();renderOverlay();toast("Logged in as "+name)}
+function readPhoto(file,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,500/im.width),cv=document.createElement("canvas");cv.width=im.width*s;cv.height=im.height*s;cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);cb(cv.toDataURL("image/jpeg",.7))};im.src=r.result};r.readAsDataURL(file)}
+
+document.addEventListener("click",ev=>{
+  const el=ev.target.closest("[data-act]");if(!el)return;
+  const a=el.dataset.act,id=el.dataset.id;
+  if(a==="close-bg"){if(ev.target===el){S.view=null;S.counterTo=null;renderOverlay()}return}
+  if(a==="close"){S.view=null;S.counterTo=null;return renderOverlay()}
+  if(a==="cat"){S.cat=id;renderChips();return renderGrid()}
+  if(a==="login"){S.view={t:"login"};return renderOverlay()}
+  if(a==="logout"){S.user=null;save();S.view=null;renderTop();return renderOverlay()}
+  if(a==="inbox"){S.view={t:"inbox"};return renderOverlay()}
+  if(a==="sell"){S.view=S.user?{t:"sell"}:{t:"login"};return renderOverlay()}
+  if(a==="detail"){S.view={t:"detail",id};return renderOverlay()}
+  if(a==="chat")return openChat(id);
+  if(a==="openchat"){S.view={t:"chat",id};return renderOverlay()}
+  if(a==="report")return toast("Reported. Thanks, we will review it.");
+  if(a==="quick"){const h={Arjun:"Block B, 4th year",Meera:"Girls Hostel 2, 3rd year",Kiran:"Block A, 2nd year"}[id]||"Block C, 1st year";return login(id,h)}
+  if(a==="dologin"){const n=$("#n").value.trim(),m=$("#em").value.trim();if(!n||!m.includes("@"))return toast("Enter your name and college email.");return login(n,$("#hs").value.trim())}
+  if(a==="post"){
+    const ti=$("#ti").value.trim(),pr=+$("#pr").value;if(!ti||!pr)return toast("Add a title and a price.");
+    const f=$("#ph").files[0],make=photo=>{S.listings.unshift({id:"l"+Date.now(),seller:S.user.name,hostel:S.user.hostel||"Campus",title:ti,price:pr,cat:$("#ca").value,cond:$("#co").value,loc:$("#lo").value||"Main gate",neg:$("#ng").checked,desc:$("#de").value,status:"active",ts:Date.now(),photo});save();S.view=null;renderOverlay();renderGrid();toast("Posted. It stays up until sold.")};
+    return f?readPhoto(f,make):make("")}
+  if(a==="sold")return markSold(id);
+  if(a==="del"){S.listings=S.listings.filter(l=>l.id!==id);save();S.view=null;renderOverlay();return renderGrid()}
+  if(a==="send"){const t=$("#tx").value.trim();if(t)push({type:"text",text:t});return $("#tx")&&$("#tx").focus()}
+  if(a==="offer"){const p=+$("#of").value;if(!p||p<=0)return toast("Enter a price.");
+    const c=curChat();if(S.counterTo!=null){c.msgs[S.counterTo].status="countered";S.counterTo=null}
+    return push({type:"offer",price:p,status:"pending"})}
+  if(a==="counter"){S.counterTo=+id;renderOverlay();return $("#of").focus()}
+  if(a==="decline"){const c=curChat();c.msgs[+id].status="declined";return push({type:"sys",text:S.user.name+" declined "+inr(c.msgs[+id].price)})}
+  if(a==="accept"){const c=curChat(),m=c.msgs[+id],l=L(c.lid);m.status="accepted";l.status="reserved";l.deal=m.price;renderGrid();
+    return push({type:"sys",text:S.user.name+" accepted "+inr(m.price)+". Item reserved. Meet at "+l.loc+" and pay on pickup."})}
+});
+document.addEventListener("keydown",ev=>{
+  if(ev.key==="Escape"&&S.view){S.view=null;renderOverlay()}
+  if(ev.key==="Enter"&&S.view&&S.view.t==="chat"){if(ev.target.id==="tx")$("[data-act=send]").click();if(ev.target.id==="of")$("[data-act=offer]").click()}
+});
+$("#q").addEventListener("input",ev=>{S.q=ev.target.value;renderGrid()});
+$("#price").addEventListener("change",renderGrid);$("#sort").addEventListener("change",renderGrid);
+renderTop();renderChips();renderGrid();
+</script>
+</body>
+</html>
